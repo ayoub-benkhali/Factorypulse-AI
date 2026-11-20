@@ -26,3 +26,24 @@ st.bar_chart(by_type, y="Taux de panne (%)")
 
 st.subheader("Détail du calcul")
 st.dataframe(by_type.style.format({"Taux de panne (%)": "{:.2f}"}))
+
+st.subheader("Taux de panne selon l’usure de l’outil")
+
+wear_band = pd.cut(
+    data["Tool wear [min]"],
+    bins=[0, 100, 150, 200, float("inf")],
+    labels=["0–99 min", "100–149 min", "150–199 min", "200 min et plus"],
+    right=False,
+)
+
+by_wear = data.groupby(wear_band, observed=False)["Machine failure"].agg(
+    observations="size",
+    pannes="sum",
+)
+by_wear.index.name = "Usure de l’outil"
+by_wear["Taux de panne (%)"] = (
+    100 * by_wear["pannes"] / by_wear["observations"]
+)
+
+st.bar_chart(by_wear, y="Taux de panne (%)")
+st.dataframe(by_wear.style.format({"Taux de panne (%)": "{:.2f}"}, na_rep="—"))
