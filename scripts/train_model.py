@@ -4,6 +4,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import confusion_matrix
 from pathlib import Path
+import joblib
 
 import pandas as pd
 
@@ -48,3 +49,7 @@ if __name__ == "__main__":
         columns=["Aucune alerte", "Alerte"],
     )
     matrix.to_csv(reports_dir / "confusion_matrix.csv", index_label="État réel")
+
+    models_dir = Path(__file__).resolve().parents[1] / "models"
+    models_dir.mkdir(exist_ok=True)
+    joblib.dump(model, models_dir / "failure_model.joblib")

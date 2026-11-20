@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import joblib
 import pandas as pd
 import streamlit as st
 
@@ -59,3 +59,34 @@ st.table(matrix)
 detected = matrix.loc["En panne", "Alerte"]
 missed = matrix.loc["En panne", "Aucune alerte"]
 st.metric("Pannes détectées sur le jeu de test", f"{detected} / {detected + missed}")
+
+st.header("Tester une prédiction")
+st.caption("Saisis les mesures d’une observation pour obtenir la décision du modèle.")
+
+with st.form("prediction_form"):
+    product_type = st.selectbox("Type du produit à tester", ["L", "M", "H"])
+    air_temp = st.number_input("Température de l’air (K)", value=300.0, step=0.1)
+    process_temp = st.number_input("Température du processus (K)", value=310.0, step=0.1)
+    speed = st.number_input("Vitesse de rotation (tr/min)", min_value=0, value=1500)
+    torque = st.number_input("Couple (Nm)", min_value=0.0, value=40.0, step=0.1)
+    wear = st.number_input("Usure de l’outil (min)", min_value=0, value=100)
+    submitted = st.form_submit_button("Tester la prédiction")
+
+if submitted:
+    observation = pd.DataFrame([{
+        "Type": product_type,
+        "Air temperature [K]": air_temp,
+        "Process temperature [K]": process_temp,
+        "Rotational speed [rpm]": speed,
+        "Torque [Nm]": torque,
+        "Tool wear [min]": wear,
+    }])
+
+    model_path = Path(__file__).resolve().parent / "models" / "failure_model.joblib"
+    model = joblib.load(model_path)
+    prediction = model.predict(observation)[0]
+
+    if prediction == 1:
+        st.warning("Alerte de panne selon le modèle.")
+    else:
+        st.success("Aucune alerte selon le modèle.")
