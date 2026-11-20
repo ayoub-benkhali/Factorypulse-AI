@@ -47,3 +47,15 @@ by_wear["Taux de panne (%)"] = (
 
 st.bar_chart(by_wear, y="Taux de panne (%)")
 st.dataframe(by_wear.style.format({"Taux de panne (%)": "{:.2f}"}, na_rep="—"))
+
+
+st.header("Évaluation du modèle")
+st.caption("Régression logistique · 2 000 observations de test · Tous types de produits")
+
+matrix_path = Path(__file__).resolve().parent / "reports" / "confusion_matrix.csv"
+matrix = pd.read_csv(matrix_path, index_col="État réel")
+st.table(matrix)
+
+detected = matrix.loc["En panne", "Alerte"]
+missed = matrix.loc["En panne", "Aucune alerte"]
+st.metric("Pannes détectées sur le jeu de test", f"{detected} / {detected + missed}")

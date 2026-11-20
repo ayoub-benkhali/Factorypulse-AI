@@ -3,6 +3,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import confusion_matrix
+from pathlib import Path
+
+import pandas as pd
 
 from prepare_data import FEATURES, prepare_data
 
@@ -35,3 +38,13 @@ if __name__ == "__main__":
 
     print(f"\nRappel : {tp} pannes détectées sur {tp + fn} ({tp / (tp + fn):.1%})")
     print(f"Fausses alertes : {fp} sur {tp + fp} alertes déclenchées")
+
+    reports_dir = Path(__file__).resolve().parents[1] / "reports"
+    reports_dir.mkdir(exist_ok=True)
+
+    matrix = pd.DataFrame(
+        [[tn, fp], [fn, tp]],
+        index=["Sans panne", "En panne"],
+        columns=["Aucune alerte", "Alerte"],
+    )
+    matrix.to_csv(reports_dir / "confusion_matrix.csv", index_label="État réel")
