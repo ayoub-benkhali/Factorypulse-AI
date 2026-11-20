@@ -7,7 +7,13 @@ csv_path = Path(__file__).parent / "data" / "raw" / "ai4i2020.csv"
 data = pd.read_csv(csv_path)
 
 st.title("FactoryPulse AI")
-st.metric("Taux de panne global", f"{data['Machine failure'].mean():.2%}")
+
+selected_type = st.selectbox("Type de produit", ["Tous", "L", "M", "H"])
+
+if selected_type != "Tous":
+    data = data.loc[data["Type"] == selected_type]
+
+st.metric("Taux de panne", f"{data['Machine failure'].mean():.2%}")
 
 by_type = data.groupby("Type")["Machine failure"].agg(
     observations="size",
